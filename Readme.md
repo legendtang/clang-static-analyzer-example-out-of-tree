@@ -16,4 +16,5 @@ ninja
 
 To run with `clang`:
 ```
+clang -cc1 -load build/libMainCallChecker.so -analyze -analyzer-checker=example.MainCallChecker test.c
 ```
