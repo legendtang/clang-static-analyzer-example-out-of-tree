@@ -16,36 +16,36 @@ public:
 } // end anonymous namespace
 
 void MainCallChecker::checkPreStmt(const CallExpr *CE, CheckerContext &C) const {
-  const Expr *Callee = CE->getCallee();
-  const FunctionDecl *FD = C.getSVal(Callee).getAsFunctionDecl();
+    const Expr *Callee = CE->getCallee();
+    const FunctionDecl *FD = C.getSVal(Callee).getAsFunctionDecl();
 
-  if (!FD)
-    return;
+    if (!FD)
+        return;
 
-  // Get the name of the callee.
-  IdentifierInfo *II = FD->getIdentifier();
-  if (!II)   // if no identifier, not a simple C function
-    return;
+    // Get the name of the callee.
+    IdentifierInfo *II = FD->getIdentifier();
+    if (!II) // if no identifier, not a simple C function
+        return;
 
-  if (II->isStr("main")) {
-    ExplodedNode *N = C.generateErrorNode();
-    if (!N)
-      return;
+    if (II->isStr("main")) {
+        ExplodedNode *N = C.generateErrorNode();
+        if (!N)
+            return;
 
-    if (!BT)
-      BT.reset(new BugType(this, "call to main", "example analyzer plugin"));
+        if (!BT)
+            BT.reset(new BugType(this, "call to main", "example analyzer plugin"));
 
-    std::unique_ptr<BugReport> report =
-        llvm::make_unique<BugReport>(*BT, BT->getName(), N);
-    report->addRange(Callee->getSourceRange());
-    C.emitReport(std::move(report));
-  }
+        auto report =
+                std::make_unique<PathSensitiveBugReport>(*BT, BT->getDescription(), N);
+        report->addRange(Callee->getSourceRange());
+        C.emitReport(std::move(report));
+    }
 }
 
 // Register plugin!
 extern "C"
 void clang_registerCheckers (CheckerRegistry &registry) {
-  registry.addChecker<MainCallChecker>("example.MainCallChecker", "Disallows calls to functions called main", "nodoc");
+  registry.addChecker<MainCallChecker>("example.MainCallChecker", "Disallows calls to functions called main", "");
 }
 
 extern "C"
